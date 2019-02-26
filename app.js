@@ -42,7 +42,7 @@ function initializeWebGL (vertexShaderText, fragmentShaderText, model) {
     var genericFragmentShader = createFragmentShader(gl, genericFragmentShaderText);
     var genericProgram = createShaderProgram(gl, genericVertexShader, genericFragmentShader);
 
-   /* var shadowVertexShaderText =
+    var shadowVertexShaderText =
 		`precision mediump float;
 		
 		uniform mat4 mProj;
@@ -61,9 +61,9 @@ function initializeWebGL (vertexShaderText, fragmentShaderText, model) {
 			fNorm = (mWorld * vec4(vNorm, 0.0)).xyz;
 		
 			gl_Position = mProj * mView * vec4(fPos, 1.0);
-		}`;*/
+		}`;
 
-    var shadowVertexShaderText =
+    /*var shadowVertexShaderText =
         `precision mediump float;
 		
 		uniform mat4 mProj;
@@ -85,10 +85,10 @@ function initializeWebGL (vertexShaderText, fragmentShaderText, model) {
 		
 			//gl_Position = mProj * mView * vec4(fPos, 1.0);
 			gl_Position = mProj * mView * mWorld * vec4(vPos, 1.0);
-		}`;
+		}`;*/
 
     // samplerCubeMap
-	/*var shadowFragmentShaderText =
+	var shadowFragmentShaderText =
 		`precision mediump float;
 
 		uniform vec3 pointLightPosition;
@@ -108,24 +108,23 @@ function initializeWebGL (vertexShaderText, fragmentShaderText, model) {
 				(length(fPos - pointLightPosition) - shadowClipNearFar.x)
 				/
 				(shadowClipNearFar.y - shadowClipNearFar.x);
-		
-			//float shadowMapValue = texture2D(lightShadowMap, -toLightNormal.xy).r;
+				
 			float shadowMapValue = texture2D(lightShadowMap, -toLightNormal.xy).r;
-			
-			
-			//vec4 shadowMapColor = texture2D(lightShadowMap, toLightNormal.xy);
-			//float shadowMapValue = shadowMapColor.r;
 		
-			float lightIntensity = 0.0;
-			if ((shadowMapValue) >= fromLightToFrag) {
-				//lightIntensity += 0.4 * max(dot(fNorm, toLightNormal), 0.0);
-				lightIntensity = 0.8;
+		   
+		
+		
+		
+		
+			float lightIntensity = 0.6;
+			if ((shadowMapValue + 0.28) >= fromLightToFrag) {
+				lightIntensity += 0.4 * max(dot(fNorm, toLightNormal), 0.0);
 			}
 		
 			gl_FragColor = vec4(meshColor.rgb * lightIntensity, meshColor.a);
-			gl_FragColor = vec4(vec3(shadowMapValue) , 1.0);
-		}`;*/
-    var shadowFragmentShaderText =
+			//gl_FragColor = vec4(vec3(shadowMapValue) , 1.0);
+		}`;
+   /* var shadowFragmentShaderText =
         `precision mediump float;
 
 		uniform vec3 pointLightPosition;
@@ -146,9 +145,9 @@ function initializeWebGL (vertexShaderText, fragmentShaderText, model) {
 			if(texturePosition.z > shadowColour.z) {
 			    lightIntensity = 0.9;
 			}		
-			gl_FragColor = vec4(meshColor.rgb * lightIntensity, meshColor.a);
-			//gl_FragColor = vec4(vec3(shadowColour) , 1.0);
-		}`;
+			//gl_FragColor = vec4(meshColor.rgb * lightIntensity, meshColor.a);
+			gl_FragColor = vec4(vec3(shadowColour) , 1.0);
+		}`;*/
 
 	var shadowVertexShader = createVertexShader(gl, shadowVertexShaderText);
 	var shadowFragmentShader = createFragmentShader(gl, shadowFragmentShaderText);
@@ -201,7 +200,8 @@ function initializeWebGL (vertexShaderText, fragmentShaderText, model) {
     var shadowMapFragmentShader = createFragmentShader(gl, shadowMapFragmentShaderText);
     var shadowMapProgram = createShaderProgram(gl, shadowMapVertexShader, shadowMapFragmentShader);
 
-    var shadowMapTextureSize = 1024;
+    //var shadowMapTextureSize = 1024;
+    var shadowMapTextureSize = 2048;
     //endregion
 
     //region Create Buffer
@@ -279,7 +279,7 @@ function initializeWebGL (vertexShaderText, fragmentShaderText, model) {
         -3.0, -3.0,  -3.0,
         3.0, -3.0,  -3.0,
         3.0,  3.0,  -3.0,
-        -3.0,  3.0,  -3.0,
+        -3.0,  3.0,  -3.0
     ];
     plane_indices = [0,  1,  2, 0,  2,  3];
 
@@ -399,13 +399,13 @@ function initializeWebGL (vertexShaderText, fragmentShaderText, model) {
 	var mainCamera = new Camera(eye, center, up);
 	setCamera(mainCamera);
 	
-    var lightPosition = vec3.fromValues(0, 0, 7);
+    var lightPosition = vec3.fromValues(0, 0, 4.5);
 
     //var shadowMapCamera = new Camera(eye, center, up);
 	var shadowMapCamera = new Camera(lightPosition, vec3.add(vec3.create(), lightPosition, vec3.fromValues(0, 0, -1)), vec3.fromValues(0, 1, 0));
     var shadowMapViewMatrix = mat4.create(); // shadowMapCamera.getViewMatrix;
-    //var shadowMapClipNearFar = vec2.fromValues(5.5, 13.0);
-    var shadowMapClipNearFar = vec2.fromValues(0.05, 15.0);
+    var shadowMapClipNearFar = vec2.fromValues(3.0, 15);
+    //var shadowMapClipNearFar = vec2.fromValues(0.05, 15.0);
     var shadowMapProjectionMatrix = mat4.create();
     mat4.perspective(shadowMapProjectionMatrix, glMatrix.toRadian(45), 1.0, shadowMapClipNearFar[0], shadowMapClipNearFar[1]);
 
@@ -499,8 +499,8 @@ function initializeWebGL (vertexShaderText, fragmentShaderText, model) {
 
         mat4.rotateY(yRotationMatrix, identityMatrix, deltaTime / 1000 * 2 * Math.PI * 0.08);
         mat4.rotateX(xRotationMatrix, identityMatrix, deltaTime / 1000 * 2 * Math.PI * 0.08);
-        //mat4.mul(worldMatrix, yRotationMatrix, xRotationMatrix);
-        mat4.mul(worldMatrix, xRotationMatrix, identityMatrix);
+        mat4.mul(worldMatrix, yRotationMatrix, identityMatrix);
+        //mat4.mul(worldMatrix, xRotationMatrix, identityMatrix);
     };
 
     var _GenerateShadowMap = function() {
@@ -575,8 +575,8 @@ function initializeWebGL (vertexShaderText, fragmentShaderText, model) {
 
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-        //gl.clearColor(0.75, 0.85, 0.8, 1.0);
-        gl.clearColor(0, 0, 0, 1.0);
+        gl.clearColor(0.75, 0.85, 0.8, 1.0);
+        //gl.clearColor(0, 0, 0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 		gl.useProgram(me.ShadowProgram);
@@ -608,7 +608,7 @@ function initializeWebGL (vertexShaderText, fragmentShaderText, model) {
         gl.drawElements(gl.TRIANGLES, plane_indices.length, gl.UNSIGNED_SHORT, 0);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
-       /* // Draw Monkey
+        // Draw Monkey
         gl.useProgram(program);
 
         gl.uniformMatrix4fv(matWorldUniformLocation, false,worldMatrix);
@@ -632,7 +632,7 @@ function initializeWebGL (vertexShaderText, fragmentShaderText, model) {
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.activeTexture(gl.TEXTURE0);
 
-        gl.drawElements(gl.TRIANGLES, susanIndices.length, gl.UNSIGNED_SHORT, 0);*/
+        gl.drawElements(gl.TRIANGLES, susanIndices.length, gl.UNSIGNED_SHORT, 0);
 
 
         // Draw Plane
