@@ -59,8 +59,12 @@ function initializeWebGL (vertexShaderText, fragmentShaderText, model) {
 		{
 			fPos = (mWorld * vec4(vPos, 1.0)).xyz;
 			fNorm = (mWorld * vec4(vNorm, 0.0)).xyz;
+			
+			//fPos = (mProj * mView * mWorld * vec4(vPos, 1.0)).xyz;			
+			//fNorm = ( mProj * mView * mWorld * vec4(vNorm, 0.0)).xyz;
 		
-			gl_Position = mProj * mView * vec4(fPos, 1.0);
+			//gl_Position = mProj * mView * vec4(fPos, 1.0);
+			 gl_Position = mProj * mView * mWorld * vec4(vPos, 1.0);
 		}`;
 
     /*var shadowVertexShaderText =
@@ -109,15 +113,10 @@ function initializeWebGL (vertexShaderText, fragmentShaderText, model) {
 				/
 				(shadowClipNearFar.y - shadowClipNearFar.x);
 				
-			float shadowMapValue = texture2D(lightShadowMap, -toLightNormal.xy).r;
-		
-		   
-		
-		
-		
+			float shadowMapValue = texture2D(lightShadowMap, -(toLightNormal.xy + vec2(-0.4, -0.4))).r;
 		
 			float lightIntensity = 0.6;
-			if ((shadowMapValue + 0.28) >= fromLightToFrag) {
+			if ((shadowMapValue + 0.1) >= fromLightToFrag) {
 				lightIntensity += 0.4 * max(dot(fNorm, toLightNormal), 0.0);
 			}
 		
@@ -256,8 +255,8 @@ function initializeWebGL (vertexShaderText, fragmentShaderText, model) {
 	//gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, shadowMapTextureSize, shadowMapTextureSize, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, shadowMapTextureSize, shadowMapTextureSize, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     //gl.bindTexture(gl.TEXTURE_2D, null);
@@ -399,13 +398,14 @@ function initializeWebGL (vertexShaderText, fragmentShaderText, model) {
 	var mainCamera = new Camera(eye, center, up);
 	setCamera(mainCamera);
 	
-    var lightPosition = vec3.fromValues(0, 0, 4.5);
+    var lightPosition = vec3.fromValues(0, 0, 5);
+    //var lightPosition = vec3.fromValues(0, 0, 5);
 
     //var shadowMapCamera = new Camera(eye, center, up);
 	var shadowMapCamera = new Camera(lightPosition, vec3.add(vec3.create(), lightPosition, vec3.fromValues(0, 0, -1)), vec3.fromValues(0, 1, 0));
     var shadowMapViewMatrix = mat4.create(); // shadowMapCamera.getViewMatrix;
-    var shadowMapClipNearFar = vec2.fromValues(3.0, 15);
-    //var shadowMapClipNearFar = vec2.fromValues(0.05, 15.0);
+    //var shadowMapClipNearFar = vec2.fromValues(3, 15);
+    var shadowMapClipNearFar = vec2.fromValues(0.05, 15.0);
     var shadowMapProjectionMatrix = mat4.create();
     mat4.perspective(shadowMapProjectionMatrix, glMatrix.toRadian(45), 1.0, shadowMapClipNearFar[0], shadowMapClipNearFar[1]);
 
@@ -579,6 +579,35 @@ function initializeWebGL (vertexShaderText, fragmentShaderText, model) {
         //gl.clearColor(0, 0, 0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+
+        // Draw Monkey
+        gl.useProgram(program);
+
+        gl.uniformMatrix4fv(matWorldUniformLocation, false,worldMatrix);
+        gl.uniformMatrix4fv(matViewUniformLocation, false, camera.getViewMatrix(viewMatrix));
+        gl.uniformMatrix4fv(matProjUniformLocation, false, projMatrix);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+        gl.vertexAttribPointer(positionAttribLocation, 3, gl.FLOAT, false, 3 * Float32Array.BYTES_PER_ELEMENT, 0);
+        gl.enableVertexAttribArray(positionAttribLocation);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+        gl.vertexAttribPointer(texCoordAttribLocation, 2, gl.FLOAT, false, 2 * Float32Array.BYTES_PER_ELEMENT, 0);
+        gl.enableVertexAttribArray(texCoordAttribLocation);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+        gl.vertexAttribPointer(normalAttribLocation, 3, gl.FLOAT, true, 3 * Float32Array.BYTES_PER_ELEMENT, 0);
+        gl.enableVertexAttribArray(normalAttribLocation);
+
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.activeTexture(gl.TEXTURE0);
+
+        gl.drawElements(gl.TRIANGLES, susanIndices.length, gl.UNSIGNED_SHORT, 0);
+
+
+
 		gl.useProgram(me.ShadowProgram);
 		gl.uniformMatrix4fv(me.ShadowProgram.uniforms.mProj, false, projMatrix);
 		gl.uniformMatrix4fv(me.ShadowProgram.uniforms.mView, false, camera.getViewMatrix(viewMatrix));
@@ -608,36 +637,12 @@ function initializeWebGL (vertexShaderText, fragmentShaderText, model) {
         gl.drawElements(gl.TRIANGLES, plane_indices.length, gl.UNSIGNED_SHORT, 0);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
-        // Draw Monkey
-        gl.useProgram(program);
 
-        gl.uniformMatrix4fv(matWorldUniformLocation, false,worldMatrix);
-        gl.uniformMatrix4fv(matViewUniformLocation, false, camera.getViewMatrix(viewMatrix));
-        gl.uniformMatrix4fv(matProjUniformLocation, false, projMatrix);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-        gl.vertexAttribPointer(positionAttribLocation, 3, gl.FLOAT, false, 3 * Float32Array.BYTES_PER_ELEMENT, 0);
-        gl.enableVertexAttribArray(positionAttribLocation);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-        gl.vertexAttribPointer(texCoordAttribLocation, 2, gl.FLOAT, false, 2 * Float32Array.BYTES_PER_ELEMENT, 0);
-        gl.enableVertexAttribArray(texCoordAttribLocation);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-        gl.vertexAttribPointer(normalAttribLocation, 3, gl.FLOAT, true, 3 * Float32Array.BYTES_PER_ELEMENT, 0);
-        gl.enableVertexAttribArray(normalAttribLocation);
-
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.activeTexture(gl.TEXTURE0);
-
-        gl.drawElements(gl.TRIANGLES, susanIndices.length, gl.UNSIGNED_SHORT, 0);
 
 
         // Draw Plane
 
-       /* gl.useProgram(genericProgram);
+        /*gl.useProgram(genericProgram);
         gl.uniformMatrix4fv(plane_matWorldUniformLocation, false, plane_worldMatrix);
         gl.uniformMatrix4fv(plane_matViewUniformLocation, false, plane_viewMatrix);
         gl.uniformMatrix4fv(plane_matProjUniformLocation, false, plane_projectionMatrix);
@@ -652,7 +657,7 @@ function initializeWebGL (vertexShaderText, fragmentShaderText, model) {
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, plane_indexBuffer);
 
-        gl.bindTexture(gl.TEXTURE_2D, plane_texture);
+        gl.bindTexture(gl.TEXTURE_2D, shadowMapTexture);
         gl.activeTexture(gl.TEXTURE0);
 
         gl.drawElements(gl.TRIANGLES, plane_indices.length, gl.UNSIGNED_SHORT, 0);*/
