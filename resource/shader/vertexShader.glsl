@@ -1,4 +1,5 @@
-attribute vec3 coordinates;
+#version 300 es
+in vec3 coordinates;
 
     void main(void)
     {

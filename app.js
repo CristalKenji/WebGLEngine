@@ -2,7 +2,7 @@ function initializeWebGL (vertexShaderText, fragmentShaderText) {
 
     //region Setup WebGL
     var canvas = document.getElementById('canvas');
-	var gl = canvas.getContext('webgl');
+	var gl = canvas.getContext('webgl2');
 
 	if (!gl) {
 		alert('Your browser does not support WebGL');
@@ -34,11 +34,12 @@ function initializeWebGL (vertexShaderText, fragmentShaderText) {
     //gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
     /*======= Associating shaders to buffer objects =======*/
+  
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
     var positionAttribLocation = gl.getAttribLocation(program, 'coordinates');
     gl.vertexAttribPointer(positionAttribLocation, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(positionAttribLocation);
-    //gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
     //region Matrix Stuff
 
