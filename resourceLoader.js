@@ -10,20 +10,9 @@ function loadResources() // TODO use Promises instead of callbacks
                 if(!error)
                 {
                     console.log("Succsess! vertexShaderText loaded");
-                    //console.log("For init:" + vertexShaderText, fragmentShaderText);
 
-                    loadJSONResource('./resource/model/Susan.json', function(error, susanModel)
-                    {
-                        if(!error)
-                        {
-                            //console.log(susanModel);
-                            initializeWebGL(vertexShaderText, fragmentShaderText, susanModel);
-                        }
-                        else
-                        {
-                            console.error(error);
-                        }
-                    });
+                    initializeWebGL(vertexShaderText, fragmentShaderText);
+
                 }
                 else
                 {
