@@ -33,7 +33,7 @@ function initializeWebGL (vertexShaderText, fragmentShaderText) {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(plane_indices), gl.STATIC_DRAW);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
-    var texcoordBuffer = gl.createBuffer();
+   /* var texcoordBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
         0, 0,
@@ -41,7 +41,7 @@ function initializeWebGL (vertexShaderText, fragmentShaderText) {
         1, 0,
         0, 1,
         1, 1,
-        1, 0]), gl.STATIC_DRAW);
+        1, 0]), gl.STATIC_DRAW);*/
     /*======= Associating shaders to buffer objects =======*/
 
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
@@ -50,11 +50,11 @@ function initializeWebGL (vertexShaderText, fragmentShaderText) {
     gl.enableVertexAttribArray(positionAttribLocation);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
+    /*gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
     var texcoordAttributeLocation = gl.getAttribLocation(program, "a_texcoord");
     gl.vertexAttribPointer(texcoordAttributeLocation, 2, gl.FLOAT, true, 0,0);
     gl.enableVertexAttribArray(texcoordAttributeLocation);
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);*/
 
     var resolutionLocation = gl.getUniformLocation(program, "iResolution");
     var deltaTimeLocation = gl.getUniformLocation(program, "iTime");
