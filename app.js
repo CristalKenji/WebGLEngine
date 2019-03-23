@@ -31,19 +31,39 @@ function initializeWebGL (vertexShaderText, fragmentShaderText) {
     var indexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(plane_indices), gl.STATIC_DRAW);
-    //gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
+    var texcoordBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        0, 0,
+        0, 1,
+        1, 0,
+        0, 1,
+        1, 1,
+        1, 0]), gl.STATIC_DRAW);
     /*======= Associating shaders to buffer objects =======*/
-  
+
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
     var positionAttribLocation = gl.getAttribLocation(program, 'coordinates');
     gl.vertexAttribPointer(positionAttribLocation, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(positionAttribLocation);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
+    gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
+    var texcoordAttributeLocation = gl.getAttribLocation(program, "a_texcoord");
+    gl.vertexAttribPointer(texcoordAttributeLocation, 2, gl.FLOAT, true, 0,0);
+    gl.enableVertexAttribArray(texcoordAttributeLocation);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    var resolutionLocation = gl.getUniformLocation(program, "iResolution");
+    var deltaTimeLocation = gl.getUniformLocation(program, "iTime");
+
+
+
     //region Matrix Stuff
 
-   /* var worldMatrix = new Float32Array(16);
+    var worldMatrix = new Float32Array(16);
 	var viewMatrix = new Float32Array(16);
 	var projMatrix = new Float32Array(16);
     var identityMatrix = new Float32Array(16);
@@ -64,23 +84,30 @@ function initializeWebGL (vertexShaderText, fragmentShaderText) {
 	var mainCamera = new Camera(eye, center, up);
 	setCamera(mainCamera);
 	
-    var lightPosition = vec3.fromValues(0, 0, 5);
+    //var lightPosition = vec3.fromValues(0, 0, 5);
 
 	mat4.identity(worldMatrix);
 	mainCamera.getViewMatrix(viewMatrix);
 	mat4.perspective(projMatrix, glMatrix.toRadian(fovy), aspect, near, far);
-    mat4.identity(identityMatrix);*/
+    mat4.identity(identityMatrix);
 
 
-  /*  gl.useProgram(program);
+    gl.useProgram(program);
     var matWorldUniformLocation = gl.getUniformLocation(program, 'mWorld');
     var matViewUniformLocation = gl.getUniformLocation(program, 'mView');
     var matProjUniformLocation = gl.getUniformLocation(program, 'mProj');
 
 	gl.uniformMatrix4fv(matWorldUniformLocation, false, worldMatrix);
 	gl.uniformMatrix4fv(matViewUniformLocation, false, viewMatrix);
-	gl.uniformMatrix4fv(matProjUniformLocation, false, projMatrix);*/
+	gl.uniformMatrix4fv(matProjUniformLocation, false, projMatrix);
 
+	var cameraEyeLocation       = gl.getUniformLocation(program, "cameraEye");
+    var cameraCenterLocation    = gl.getUniformLocation(program, "cameraCenter");
+    var cameraUpLocation        = gl.getUniformLocation(program, "cameraUp");
+
+    gl.uniform3f(cameraEyeLocation, eye.x, eye.y, eye.z);
+    gl.uniform3f(cameraCenterLocation, center.x, center.y, center.z);
+    gl.uniform3f(cameraUpLocation, up.x, up.y, up.z);
     //endregion
 
     /*======== Main render loop ===========*/
@@ -93,8 +120,10 @@ function initializeWebGL (vertexShaderText, fragmentShaderText) {
 
 		_Update(deltaTime);
 
-        previousFrame = currentFrameTime;
+		//console.log("currentFrameTime:" + currentFrameTime/ 1000);
 
+        previousFrame = currentFrameTime;
+        gl.uniform1f(deltaTimeLocation, currentFrameTime * 0.001);
 		_Render();
 
 		requestAnimationFrame(loop);
@@ -105,11 +134,14 @@ function initializeWebGL (vertexShaderText, fragmentShaderText) {
 
         //mainCamera.getViewMatrix(viewMatrix);
 
+        //gl.uniformMatrix4fv(matViewUniformLocation, false, viewMatrix);
+
     };
 
     var _Render = function() {
 
-        gl.clearColor(0.75, 0.85, 0.8, 1.0);
+        //gl.clearColor(0.75, 0.85, 0.8, 1.0);
+        gl.clearColor(0.3, 0.15, 0.5, 1.0);
 
     	// Clear back buffer
         //gl.enable(gl.CULL_FACE);
@@ -119,7 +151,13 @@ function initializeWebGL (vertexShaderText, fragmentShaderText) {
 
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-       gl.drawElements(gl.TRIANGLES, plane_indices.length, gl.UNSIGNED_SHORT, 0);
+
+        gl.uniform3f(resolutionLocation, gl.canvas.width, gl.canvas.height, 0.0);
+
+
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+
+        gl.drawElements(gl.TRIANGLES, plane_indices.length, gl.UNSIGNED_SHORT, 0);
 
 	};
 
