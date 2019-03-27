@@ -152,6 +152,9 @@ function initializeWebGL (vertexShaderText, fragmentShaderText) {
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
 
+        //gl.enable(gl.BLEND);
+        //gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
         gl.uniform3f(resolutionLocation, gl.canvas.width, gl.canvas.height, 0.0);
 
 
