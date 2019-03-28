@@ -21,24 +21,54 @@ var mouseEventListener = true;
 
 var camera = null;
 
+
+var mousePositionX;
+var mousePositionY;
+
+
+
 var processMouseEventHandler = function(event) {
     //console.log("processMouseEventHandler");
-    switch (event.button) {
-        case 0:
-            leftMBtnPressed =! leftMBtnPressed;
-            console.log('Left BTN pressed: ' + leftMBtnPressed);
-            break;
-        case 1:
-            middleMBtnPressed =! middleMBtnPressed;
-            console.log('Middle BTN pressed: ' + middleMBtnPressed);
-            break;
-        case 2:
-            rightMBtnPressed =! rightMBtnPressed;
-            console.log('Right BTN pressed: ' + rightMBtnPressed);
-            break;
-        default:
-            return; // Quit when this doesn't handle the key event.
+
+    //console.log(event.buttons);
+    //if(event.type == "mouseup" || event.type == "mouseup")
+        /*
+        switch (event.buttons) {
+            case 1:
+                leftMBtnPressed =! leftMBtnPressed;
+                console.log('Left BTN pressed: ' + leftMBtnPressed);
+                break;
+            case 4:
+                middleMBtnPressed =! middleMBtnPressed;
+                console.log('Middle BTN pressed: ' + middleMBtnPressed);
+                break;
+            case 2:
+                rightMBtnPressed =! rightMBtnPressed;
+                console.log('Right BTN pressed: ' + rightMBtnPressed);
+                break;
+            default:
+                return; // Quit when this doesn't handle the key event.
+        }
+*/
+
+
+     //getRelativeMousePosition
+    function getRelativeMousePosition(event) {
+        target = event.target;
+        var rect = target.getBoundingClientRect();
+
+        return {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top,
+        }
     }
+
+    var pos = getRelativeMousePosition(event);
+
+    mousePositionX = pos.x / document.getElementById("canvas").clientWidth; // *  2 - 1;
+    mousePositionY = pos.y / document.getElementById("canvas").clientHeight; //* -2 + 1;
+
+    //console.log(mousePositionX);
 };
 
 var processKeyboardEventHandler = function(event) {
@@ -109,6 +139,7 @@ function activateMouseEvents()
     console.log('activateMouseEvents');
     document.getElementById("canvas").addEventListener('mousedown', processMouseEventHandler);
     document.getElementById("canvas").addEventListener('mouseup', processMouseEventHandler);
+    document.getElementById("canvas").addEventListener("mousemove", processMouseEventHandler);
 
     //mouseEventListener = true;
 }

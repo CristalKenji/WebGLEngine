@@ -3,6 +3,9 @@ precision mediump float;
 
 uniform vec3 iResolution;
 uniform float iTime;
+uniform vec2 mousePosition;
+uniform float radians;
+
 out vec4 fragColor;
 
 float iqhash( float n )
@@ -91,32 +94,24 @@ vec4 render( in vec3 ro, in vec3 rd, in ivec2 px )
     return vec4( col, 1.0 );
 }
 
-mat3 setCamera( in vec3 ro, in vec3 ta, float cr )
-{
-	vec3 cw = normalize(ta-ro);
-	vec3 cp = vec3(sin(cr), cos(cr),0.0);
-	vec3 cu = normalize( cross(cw,cp) );
-	vec3 cv = normalize( cross(cu,cw) );
-    return mat3( cu, cv, cw );
-}
-
 void main( void )
 {
-     float x = gl_FragCoord.x/iResolution.x; // 0.0 < x < 1.0
-     float y = gl_FragCoord.y/iResolution.y;
+     vec2 uv = gl_FragCoord.xy / iResolution.xy; // 0.0 < x < 1.0
+     uv -= 0.5;
+     uv.x *= iResolution.x / iResolution.y;
 
-     //vec3 ro = vec3(1.2, 0.1, 0.0);
-     //vec3 rd = normalize(vec3(x , y - 0.13, -0.4));
+     vec3 ro = vec3(3.0 * sin(radians), 1.5 * mousePosition.y, -3. * cos(radians));
 
-     vec3 ro = vec3(3.5, 1.1, 0.9);
-     vec3 ta = vec3( -0.0, -0.5, -0.5 );
+     vec3 lookat = vec3(0.0);
+     float zoom = 0.5;
 
-     // camera-to-world transformation
-     mat3 ca = setCamera( ro, ta, 0.0 );
+     vec3 forward = normalize(lookat-ro);
+     vec3 right = cross(vec3(0.0, 1.0, 0.0), forward);
+     vec3 up = cross(forward, right);
 
-     // ray direction
-     vec3 rd = ca * normalize( vec3(x, y, 2.0) );
+     vec3 centerOfScreen = ro + forward * zoom;
+     vec3 intersection = centerOfScreen + uv.x * right + uv.y * up;
 
+     vec3 rd = intersection - ro;
      fragColor = render( ro, rd, ivec2(gl_FragCoord-0.5) );
-     //fragColor = render( ro, rd, ivec2(x-0.5, y-0.5) );
 }

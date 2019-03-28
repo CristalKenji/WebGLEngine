@@ -60,7 +60,8 @@ function initializeWebGL (vertexShaderText, fragmentShaderText) {
     var deltaTimeLocation = gl.getUniformLocation(program, "iTime");
 
 
-
+    var mousePositionLocation = gl.getUniformLocation(program, "mousePosition");
+    var radiansLocation = gl.getUniformLocation(program, "radians");
     //region Matrix Stuff
 
     var worldMatrix = new Float32Array(16);
@@ -114,6 +115,9 @@ function initializeWebGL (vertexShaderText, fragmentShaderText) {
 	var previousFrame = performance.now();
 	var deltaTime = 0;
 
+	var degree = 0;
+	var radians = 0;
+
     var loop = function (currentFrameTime) {
 
         deltaTime = currentFrameTime - previousFrame;
@@ -136,6 +140,18 @@ function initializeWebGL (vertexShaderText, fragmentShaderText) {
 
         //gl.uniformMatrix4fv(matViewUniformLocation, false, viewMatrix);
 
+        gl.uniform2f(mousePositionLocation, mousePositionX, mousePositionY);
+
+        //degree = (degree < 360)? degree += 1 : degree = 0;
+
+        //degree = mousePositionX * 360;
+        degree = mousePositionX * 2 * Math.PI;
+
+        //gl.uniform1f(radiansLocation, degree * Math.PI / 180);
+        gl.uniform1f(radiansLocation, degree);
+
+        //console.log(degree);
+
     };
 
     var _Render = function() {
@@ -150,7 +166,6 @@ function initializeWebGL (vertexShaderText, fragmentShaderText) {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-
 
         //gl.enable(gl.BLEND);
         //gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
