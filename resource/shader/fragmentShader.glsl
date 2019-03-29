@@ -100,7 +100,7 @@ void main( void )
      uv -= 0.5;
      uv.x *= iResolution.x / iResolution.y;
 
-     vec3 ro = vec3(3.0 * sin(radians), 1.5 * mousePosition.y, -3. * cos(radians));
+     vec3 ro = vec3(3.0 * sin(radians), 1.5 * mousePosition.y, -3.0 * cos(radians));
 
      vec3 lookat = vec3(0.0);
      float zoom = 0.5;
